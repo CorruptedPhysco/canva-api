@@ -1,4 +1,4 @@
-import requests
+import requests,re
 from bs4 import BeautifulSoup
 from flask import Flask, jsonify
 from flask_cors import CORS
@@ -13,7 +13,18 @@ def get_first():
     div= soup.find("a",class_="su-button su-button-style-soft su-button-wide")
     print(div["href"])
     return(div["href"])
+    
+def extract_static_canva_link():
+    url=get_first()
+    r = requests.get(url)
+    r.raise_for_status()
+    match = re.search(r'https://www\.canva\.com/[^\s"<>]+', r.text)
+    return match.group(0) if match else None
 
+@app.route('/get-canva',methods=["GET"])
+def get_canva():
+    result = extract_static_canva_link()
+    return jsonify(result)
  
 @app.route("/get-link", methods=["GET"])
 def get_link():
